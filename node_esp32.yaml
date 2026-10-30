@@ -9,15 +9,15 @@ esp8266:
 logger:
   level: DEBUG
 #  hardware_uart: UART0_SWAP  # Переносит вывод логов на пин D4 (GPIO2) 
+
 #  Подключение к вашему Wi-Fi
 wifi:
-  ssid: "IoT"
-  password: "yz1234xw"
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 
-# Автоматическое обнаружение в Home Assistant
 api:
   encryption:
-    key: "EObA45KyfJ0Rx7FTNnBeDxAkgY+jdzYGyQmWFgAsoOo="
+    key: !secret api_encryption_key
 
 ota:
   - platform: esphome
