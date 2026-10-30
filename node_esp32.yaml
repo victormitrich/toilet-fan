@@ -1,0 +1,60 @@
+esphome:
+  name: toilet-fan-node      # Мы поменяли имя устройства
+  friendly_name: Toilet Fan Node
+
+# МЕНЯЕМ ПЛАТФОРМУ НА ESP8266:
+esp8266:
+  board: nodemcuv2           # Универсальный шаблон для плат NodeMCU и Wemos D1 mini
+  early_pin_init: false  # Защита от случайного мигания/включения реле при старте
+logger:
+  level: DEBUG
+#  hardware_uart: UART0_SWAP  # Переносит вывод логов на пин D4 (GPIO2) 
+#  Подключение к вашему Wi-Fi
+wifi:
+  ssid: "IoT"
+  password: "yz1234xw"
+
+# Автоматическое обнаружение в Home Assistant
+api:
+  encryption:
+    key: "EObA45KyfJ0Rx7FTNnBeDxAkgY+jdzYGyQmWFgAsoOo="
+
+ota:
+  - platform: esphome
+# Управление симистором (MOC3041 -> BT136)
+switch:
+  - platform: gpio
+    pin: GPIO4             # На плате это пин D2
+    name: "Toilet Fan"
+    id: toilet_fan
+
+# Отслеживание выключателя света
+binary_sensor:
+  - platform: gpio
+    pin: 
+      number: GPIO12        # На плате это пин D6
+      mode: INPUT
+      inverted: true        # Переворачиваем логику: теперь свет=ON, темнота=OFF
+    name: "Toilet Light Status"
+     # Фильтр против пульсации (дребезга) света:
+    # Ждем 20 мс стабильного отсутствия импульса, прежде чем считать, что свет выключили
+    filters:
+      - delayed_off: 40ms
+
+    # Автоматизация
+    on_release:
+      then:
+        - switch.turn_on: toilet_fan
+        - delay: 120sec
+        - switch.turn_off: toilet_fan
+# Виртуальная кнопка для ручного запуска из Home Assistant
+button:
+  - platform: template
+    name: "Toilet Fan Manual 3 Min"
+    icon: "mdi:fan-clock"
+    on_press:
+      then:
+        - switch.turn_on: toilet_fan
+        - delay: 180sec
+        - switch.turn_off: toilet_fan
+        
